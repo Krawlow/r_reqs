@@ -1,5 +1,5 @@
 # Function to generate requirements
-generate_requirements <- function(path = ".", output_file = "requirements.txt") {
+generate_requirements <- function(path = ".", output_file = "r_requirements.txt") {
   # List all R files in the specified directory and its subdirectories
   files <- list.files(
     path,
@@ -51,14 +51,14 @@ generate_requirements <- function(path = ".", output_file = "requirements.txt") 
     # Flatten the list and remove NULLs
     libs <- unlist(libs)
     libs <- libs[libs != ""]
-    
+
     # Append unique packages to the vector
     packages <- unique(c(packages, libs))
   }
-  
+
   # Write packages to the output file
   if (length(packages) > 0) {
-    writeLines(paste0("install.packages(\"", packages, "\")"), output_file)
+    writeLines(paste0("install.packages(\"", packages, "\", repos=\"http://cran.rstudio.com/\")"), output_file)
     message("Requirements written to ", output_file)
   } else {
     message("No packages found.")
