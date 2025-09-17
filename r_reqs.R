@@ -58,7 +58,7 @@ generate_requirements <- function(path = ".", output_file = "r_requirements.txt"
 
   # Write packages to the output file
   if (length(packages) > 0) {
-    writeLines(paste0("install.packages(\"", packages, "\", repos=\"http://cran.rstudio.com/\")"), paste0(path, output_file))
+    writeLines(paste0("install.packages(\"", packages, "\", repos=\"http://cran.rstudio.com/\")"), paste0(path, "/", output_file))
     message("Requirements written to ", output_file)
   } else {
     message("No packages found.")
