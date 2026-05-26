@@ -12,21 +12,18 @@ generate_requirements <- function(path = ".", output_file = "r_requirements.txt"
   packages <- character()
 
   # Loop through each file and extract package names
-  inside_multi_line_comment <- FALSE
   for (file in files) {
     lines <- readLines(file, warn = FALSE)
 
     # Create an combine regex patterns
     ignore_comments <- "#.*"
-    ignore_multiline_comments <- '"""'
-
     lines_without_comments <- gsub(ignore_comments, "", lines)
 
+    # Logic for """ multi-line comments
+    ignore_multiline_comments <- '"""'
     quote_positions <- lines_without_comments == ignore_multiline_comments
-
     # Odd cumsum values indicate we're inside a block, even means outside
     inside_comment <- cumsum(quote_positions) %% 2 == 1
-
     cleaned_lines <- lines_without_comments[!inside_comment]
 
     match_library <- "(?<=library\\()(\\w+)"
@@ -58,7 +55,17 @@ generate_requirements <- function(path = ".", output_file = "r_requirements.txt"
 
   # Write packages to the output file
   if (length(packages) > 0) {
-    writeLines(paste0("install.packages(\"", packages, "\", repos=\"http://cran.rstudio.com/\")"), paste0(path, "/", output_file))
+    # Define the high-speed Binary Repository (Assuming Debian Bookworm for r-base)
+    ppm_repo <- "https://packagemanager.posit.co/cran/__linux__/bookworm/latest"
+
+    # Construct a script that sets options first, then installs everything at once
+    output_content <- c(
+      paste0("options(repos = c(PPM = '", ppm_repo, "', CRAN = 'https://cran.rstudio.com/'))"),
+      "options(Ncpus = max(1, parallel::detectCores()))", # Use all cores
+      paste0("install.packages(c('", paste(packages, collapse = "', '"), "'))")
+    )
+
+    writeLines(output_content, file.path(path, output_file))
     message("Requirements written to ", output_file)
   } else {
     message("No packages found.")
